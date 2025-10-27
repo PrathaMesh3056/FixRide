@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Vehicle Service Booking</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+
+    <style>
+        .btn-darkblue {
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            transition: 0.3s ease-in-out;
+        }
+
+        .btn-darkblue:hover {
+            background-color: #163075;
+            color: white;
+        }
+
+        .text-darkblue {
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- Navbar with Logo -->
+<nav class="navbar navbar-expand-lg" style="background-color: #1e3a8a;">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center text-white" th:href="@{/}">
+            <img src="/images/vehicle-inspection1.png" alt="VehicleService Logo" width="150" height="100" class="large-logo">
+            
+        </a>
+
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/book}">Book</a></li>
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/status}">Status</a></li>
+                <li class="nav-item"><a class="nav-link text-white" th:href="@{/admin/login}">Admin</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<header class="bg-white py-5 shadow-sm">
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold" style="color: #1e3a8a;">Welcome to Vehicle Service Booking</h1>
+        <p class="lead text-muted">Easily schedule your vehicle service, check status, or access the admin panel.</p>
+    </div>
+</header>
+
+<!-- Services Section -->
+<section class="container py-5">
+    <div class="row g-4 justify-content-center">
+        <!-- Book Service -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-darkblue">Book a Service</h5>
+                    <p class="card-text">Schedule your next vehicle service quickly and easily.</p>
+                    <a th:href="@{/book}" class="btn btn-darkblue btn-lg rounded-pill mt-3">Book Now</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Check Status -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-darkblue">Check Booking Status</h5>
+                    <p class="card-text">Track your current service requests in real time.</p>
+                    <a th:href="@{/status}" class="btn btn-darkblue btn-lg rounded-pill mt-3">Check Status</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-darkblue">Admin Panel</h5>
+                    <p class="card-text">Manage all service bookings and user data efficiently.</p>
+                   <a href="/admin/login" class="btn btn-darkblue btn-lg rounded-pill mt-3">Go to Admin</a>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer style="background-color: #1e3a8a;" class="text-white text-center py-3">
+    <div class="container">
+        <small>&copy; 2025 VehicleService. All rights reserved.</small>
+    </div>
+</footer>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
