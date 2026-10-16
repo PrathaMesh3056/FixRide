@@ -1,0 +1,146 @@
+﻿
+
+# FixRide
+
+A Vehicle‐Repairing Web Application
+
+## Table of Contents
+
+* [About](#about)
+* [Features](#features)
+* [Tech Stack](#tech-stack)
+* [Getting Started](#getting-started)
+
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Running the Application](#running-the-application)
+* [Project Structure](#project-structure)
+* [Usage](#usage)
+* [Contributing](#contributing)
+* [License](#license)
+* [Contact](#contact)
+
+## About
+
+FixRide is a website aimed at providing vehicle-repairing services. It allows users to view, book or manage repair jobs for their vehicles, and helps service centres to manage repair tasks efficiently.
+
+## Features
+
+* User registration/login
+* Vehicle profile management
+* Booking repair services
+* Listing available repair shops/service centres
+* Admin/service-centre dashboard to monitor and update repair jobs
+* Responsive UI (works across desktop & mobile)
+* Basic data validation and error handling
+
+## Tech Stack
+
+* Backend: Java (Spring / Spring Boot) 
+* Frontend: HTML, CSS,JavaScript
+* Database: ( MySQL)
+* Build Tool: Maven 
+* Version Control: Git + GitHub
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have installed:
+
+* Java JDK 
+* Maven
+* A database server 
+* Git
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/PrathaMesh3056/FixRide.git  
+   cd FixRide  
+   ```
+2. Configure database connection:
+
+   * Update `application.properties` or `application.yml` (in `src/main/resources`) to match your database credentials.
+   * If using embedded DB (like H2) you may skip this step.
+3. Build the project:
+
+   ```bash
+   mvn clean install  
+   ```
+
+### Running the Application
+
+To start the application:
+
+```bash
+mvn spring-boot:run  
+```
+
+or run the generated jar file:
+
+```bash
+java ­-jar target/FixRide-<version>.jar  
+```
+
+Once running, open your browser and go to:
+
+```
+http://localhost:8083/
+```
+
+
+
+## Project Structure
+
+```
+├── .mvn/                # Maven wrapper  
+├── src/                 # Source code  
+│   ├── main/  
+│   │   ├── java/        # Java backend code  
+│   │   └── resources/   # Configuration, static files, templates  
+├── pom.xml              # Maven configuration  
+├── README.md            # This file  
+└── …
+```
+
+
+
+## Usage
+
+* Register as a new user or login with existing credentials.
+* On successful login, you can:
+
+  * Add your vehicle details.
+  * Browse available repair shops / services.
+  * Book a repair job, specifying date/time and service type.
+  * Service centres can log in to view incoming jobs and update status (e.g., “In Progress”, “Completed”).
+* Admin  can monitor all users, vehicles, bookings, and generate reports.
+
+## Contributing
+
+Contributions are welcome! Here’s how you can help:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/YourFeature`).
+3. Make your changes and commit with clear messages.
+4. Push to your fork and open a Pull Request.
+5. Ensure code is well-tested and follows existing coding conventions.
+
+## License
+
+> This project is licensed under the [MIT License](LICENSE).
+
+## Contact
+
+If you have any questions or suggestions, feel free to reach out:
+
+* Author: Pratha Mesh (GitHub: @PrathaMesh3056)
+* Email:(patil30pratham@gmail.com)
+
+
+
+
+
