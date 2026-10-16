@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Service - AutoCare</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand" id="nav-brand">
+                <span class="brand-icon">🚗</span>
+                <span>AutoCare</span>
+            </a>
+            <ul class="nav-links">
+                <li><a th:href="@{/}" id="nav-home">Home</a></li>
+                <li><a th:href="@{/book}" class="active" id="nav-book">Book Service</a></li>
+                <li><a th:href="@{/status}" id="nav-status">Track Status</a></li>
+                <li><a th:href="@{/admin-dashboard}" id="nav-admin">Admin Panel</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <div class="narrow-container">
+            <div class="card" id="booking-card">
+                <div class="card-header">
+                    <h2 class="card-title">Book Vehicle Service</h2>
+                    <p class="card-subtitle">Fill in your vehicle details to reserve your servicing appointment.</p>
+                </div>
+
+                <div id="alert-box" style="display: none;"></div>
+
+                <form id="booking-form" th:action="@{/user/book}" method="post">
+                    <div class="form-group">
+                        <label class="form-label" for="customerName">Full Name</label>
+                        <input type="text" class="form-control" id="customerName" name="customerName" placeholder="e.g. John Doe" required />
+                        <span class="form-hint">Enter the vehicle owner's name</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="vehicleNumber">Vehicle Registration Number</label>
+                        <input type="text" class="form-control" id="vehicleNumber" name="vehicleNumber" placeholder="e.g. MH-12-AB-1234" required />
+                        <span class="form-hint">Enter license plate or registration number</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="bookingDate">Preferred Service Date</label>
+                        <input type="date" class="form-control" id="bookingDate" name="bookingDate" required />
+                        <span class="form-hint">Select your appointment date</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="btn-submit-booking">
+                        Confirm & Book Service
+                    </button>
+                </form>
+
+                <!-- Confirmation Receipt (Shown after booking) -->
+                <div id="booking-success-view" style="display: none;">
+                    <div class="alert alert-success">
+                        <span>✅</span>
+                        <div><strong>Service Booked Successfully!</strong> Your appointment has been scheduled.</div>
+                    </div>
+
+                    <div class="receipt-card">
+                        <div class="receipt-row">
+                            <span class="receipt-label">Booking Reference ID:</span>
+                            <span class="receipt-value" id="receipt-id">#--</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="receipt-label">Customer Name:</span>
+                            <span class="receipt-value" id="receipt-customer">--</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="receipt-label">Vehicle Number:</span>
+                            <span class="receipt-value" id="receipt-vehicle">--</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="receipt-label">Scheduled Date:</span>
+                            <span class="receipt-value" id="receipt-date">--</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="receipt-label">Current Status:</span>
+                            <span class="receipt-value">
+                                <span class="badge badge-booked">
+                                    <span class="badge-dot"></span>
+                                    <span id="receipt-status">Booked</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                        <a id="btn-track-receipt" th:href="@{/status}" class="btn btn-primary" style="flex: 1;">
+                            Track Status
+                        </a>
+                        <button type="button" class="btn btn-secondary" id="btn-book-another" style="flex: 1;">
+                            Book Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 AutoCare Vehicle Service Booking System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Set minimum booking date to today
+        const dateInput = document.getElementById('bookingDate');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.min = today;
+        dateInput.value = today;
+
+        const bookingForm = document.getElementById('booking-form');
+        const submitBtn = document.getElementById('btn-submit-booking');
+        const alertBox = document.getElementById('alert-box');
+        const successView = document.getElementById('booking-success-view');
+        const bookAnotherBtn = document.getElementById('btn-book-another');
+
+        bookingForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const customerName = document.getElementById('customerName').value.trim();
+            const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
+            const bookingDate = document.getElementById('bookingDate').value;
+
+            if (!customerName || !vehicleNumber || !bookingDate) {
+                showAlert('Please fill in all required fields.', 'danger');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Scheduling Appointment...';
+            alertBox.style.display = 'none';
+
+            const payload = {
+                customerName: customerName,
+                vehicleNumber: vehicleNumber,
+                bookingDate: bookingDate,
+                status: 'Booked'
+            };
+
+            try {
+                const response = await fetch('/user/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Server returned error status ' + response.status);
+                }
+
+                const data = await response.json();
+
+                // Populate Receipt View
+                document.getElementById('receipt-id').textContent = '#' + (data.id || 'N/A');
+                document.getElementById('receipt-customer').textContent = data.customerName || customerName;
+                document.getElementById('receipt-vehicle').textContent = data.vehicleNumber || vehicleNumber;
+                document.getElementById('receipt-date').textContent = data.bookingDate || bookingDate;
+                document.getElementById('receipt-status').textContent = data.status || 'Booked';
+
+                const trackBtn = document.getElementById('btn-track-receipt');
+                trackBtn.href = '/status?customerName=' + encodeURIComponent(data.customerName || customerName);
+
+                bookingForm.style.display = 'none';
+                successView.style.display = 'block';
+
+            } catch (err) {
+                showAlert('Unable to submit booking right now. Please try again.', 'danger');
+                console.error('Booking error:', err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirm & Book Service';
+            }
+        });
+
+        bookAnotherBtn.addEventListener('click', function () {
+            bookingForm.reset();
+            dateInput.value = today;
+            successView.style.display = 'none';
+            bookingForm.style.display = 'block';
+            alertBox.style.display = 'none';
+        });
+
+        function showAlert(message, type) {
+            alertBox.className = 'alert alert-' + type;
+            alertBox.innerHTML = '<span>⚠️</span> <div>' + message + '</div>';
+            alertBox.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>

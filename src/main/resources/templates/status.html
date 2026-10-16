@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Booking Status - AutoCare</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand" id="nav-brand">
+                <span class="brand-icon">🚗</span>
+                <span>AutoCare</span>
+            </a>
+            <ul class="nav-links">
+                <li><a th:href="@{/}" id="nav-home">Home</a></li>
+                <li><a th:href="@{/book}" id="nav-book">Book Service</a></li>
+                <li><a th:href="@{/status}" class="active" id="nav-status">Track Status</a></li>
+                <li><a th:href="@{/admin-dashboard}" id="nav-admin">Admin Panel</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <div class="narrow-container">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Track Service Status</h2>
+                    <p class="card-subtitle">Search with your registered customer name to check your vehicle's service progress.</p>
+                </div>
+
+                <form id="status-search-form" onsubmit="event.preventDefault(); fetchBookings();">
+                    <div class="form-group">
+                        <label class="form-label" for="customerName">Enter Your Customer Name</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" class="form-control" id="customerName" name="customerName" placeholder="e.g. John Doe" required />
+                            <button type="submit" class="btn btn-primary" id="btn-search-status" style="white-space: nowrap;">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Feedback & Results Container -->
+                <div id="results-section" style="margin-top: 24px;">
+                    <div id="initial-state" class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <p>Enter your full customer name above to view your booking history and current status.</p>
+                    </div>
+
+                    <div id="loading-state" class="empty-state" style="display: none;">
+                        <div class="empty-icon">⏳</div>
+                        <p>Searching for your bookings...</p>
+                    </div>
+
+                    <div id="not-found-state" class="empty-state" style="display: none;">
+                        <div class="empty-icon">⚠️</div>
+                        <p id="not-found-msg">No bookings found for that name.</p>
+                        <div style="margin-top: 16px;">
+                            <a th:href="@{/book}" class="btn btn-secondary btn-sm">Book a New Service</a>
+                        </div>
+                    </div>
+
+                    <div id="table-container" class="table-responsive" style="display: none; margin-top: 16px;">
+                        <table class="custom-table" id="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Vehicle Number</th>
+                                    <th>Service Date</th>
+                                    <th>Current Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 AutoCare Vehicle Service Booking System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const searchInput = document.getElementById('customerName');
+        const initialState = document.getElementById('initial-state');
+        const loadingState = document.getElementById('loading-state');
+        const notFoundState = document.getElementById('not-found-state');
+        const tableContainer = document.getElementById('table-container');
+        const tbody = document.getElementById('bookings-tbody');
+
+        // Check if customerName query param exists in URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const nameParam = params.get('customerName') || params.get('name');
+            if (nameParam) {
+                searchInput.value = nameParam;
+                fetchBookings();
+            }
+        });
+
+        async function fetchBookings() {
+            const name = searchInput.value.trim();
+            if (!name) return;
+
+            initialState.style.display = 'none';
+            notFoundState.style.display = 'none';
+            tableContainer.style.display = 'none';
+            loadingState.style.display = 'block';
+
+            try {
+                const response = await fetch('/user/mybookings?customerName=' + encodeURIComponent(name));
+                if (!response.ok) {
+                    throw new Error('Server returned ' + response.status);
+                }
+
+                const bookings = await response.json();
+                loadingState.style.display = 'none';
+
+                if (!bookings || bookings.length === 0) {
+                    document.getElementById('not-found-msg').textContent = 'No bookings found for "' + name + '".';
+                    notFoundState.style.display = 'block';
+                    return;
+                }
+
+                // Populate Table
+                tbody.innerHTML = '';
+                bookings.forEach(b => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>#${b.id}</strong></td>
+                        <td>${escapeHtml(b.vehicleNumber)}</td>
+                        <td>${escapeHtml(b.bookingDate || 'N/A')}</td>
+                        <td>${renderBadge(b.status)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                tableContainer.style.display = 'block';
+
+            } catch (err) {
+                loadingState.style.display = 'none';
+                document.getElementById('not-found-msg').textContent = 'Error connecting to service. Please try again.';
+                notFoundState.style.display = 'block';
+                console.error('Fetch error:', err);
+            }
+        }
+
+        function renderBadge(status) {
+            const s = (status || 'Booked').toLowerCase();
+            let badgeClass = 'badge-booked';
+
+            if (s.includes('progress')) badgeClass = 'badge-progress';
+            else if (s.includes('complete') || s.includes('done')) badgeClass = 'badge-completed';
+            else if (s.includes('cancel')) badgeClass = 'badge-cancelled';
+
+            return `<span class="badge ${badgeClass}"><span class="badge-dot"></span>${escapeHtml(status || 'Booked')}</span>`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

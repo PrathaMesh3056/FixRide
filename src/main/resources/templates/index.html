@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoCare - Vehicle Service Booking System</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand" id="nav-brand">
+                <span class="brand-icon">🚗</span>
+                <span>AutoCare</span>
+            </a>
+            <ul class="nav-links">
+                <li><a th:href="@{/}" class="active" id="nav-home">Home</a></li>
+                <li><a th:href="@{/book}" id="nav-book">Book Service</a></li>
+                <li><a th:href="@{/status}" id="nav-status">Track Status</a></li>
+                <li><a th:href="@{/admin-dashboard}" id="nav-admin">Admin Panel</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <span class="hero-pill">⚡ Reliable & Professional Vehicle Care</span>
+            <h1 class="hero-title">Smart & Seamless <span>Vehicle Service</span> Booking</h1>
+            <p class="hero-desc">
+                Book your periodic maintenance, oil changes, brake repairs, and diagnostics in seconds. Track real-time service status anytime.
+            </p>
+            <div class="hero-actions">
+                <a th:href="@{/book}" class="btn btn-primary" id="hero-btn-book">📅 Book Service Now</a>
+                <a th:href="@{/status}" class="btn btn-secondary" id="hero-btn-status">🔍 Check Booking Status</a>
+            </div>
+        </section>
+
+        <!-- Feature Highlights Grid -->
+        <div class="grid-3">
+            <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h3 class="feature-title">Quick 1-Minute Booking</h3>
+                <p class="feature-desc">Schedule your vehicle service appointment effortlessly with your details and preferred date.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📡</div>
+                <h3 class="feature-title">Real-Time Status Tracking</h3>
+                <p class="feature-desc">Stay updated on whether your vehicle is booked, under maintenance, completed, or ready for pickup.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Centralized Admin Control</h3>
+                <p class="feature-desc">Service centers can seamlessly manage all customer appointments, update progress, and handle records.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 AutoCare Vehicle Service Booking System. All rights reserved.</p>
+    </footer>
+</body>
+</html>

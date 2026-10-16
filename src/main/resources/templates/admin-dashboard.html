@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AutoCare</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a th:href="@{/}" class="brand" id="nav-brand">
+                <span class="brand-icon">🚗</span>
+                <span>AutoCare</span>
+            </a>
+            <ul class="nav-links">
+                <li><a th:href="@{/}" id="nav-home">Home</a></li>
+                <li><a th:href="@{/book}" id="nav-book">Book Service</a></li>
+                <li><a th:href="@{/status}" id="nav-status">Track Status</a></li>
+                <li><a th:href="@{/admin-dashboard}" class="active" id="nav-admin">Admin Panel</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--dark); letter-spacing: -0.02em;">
+                    Admin Management Console
+                </h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">
+                    Monitor, update service status, and manage all registered vehicle bookings.
+                </p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-secondary" id="btn-refresh" onclick="loadAllBookings()">
+                    🔄 Refresh Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div id="toast-alert" style="display: none;"></div>
+
+        <!-- Stat Summary Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Total Bookings</h4>
+                    <div class="stat-number" id="stat-total">0</div>
+                </div>
+                <div class="stat-icon" style="background: #e0e7ff; color: #4338ca;">📋</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Booked</h4>
+                    <div class="stat-number" id="stat-booked">0</div>
+                </div>
+                <div class="stat-icon" style="background: #eff6ff; color: #1d4ed8;">📌</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>In Progress</h4>
+                    <div class="stat-number" id="stat-progress">0</div>
+                </div>
+                <div class="stat-icon" style="background: #fffbeb; color: #b45309;">⚙️</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>Completed</h4>
+                    <div class="stat-number" id="stat-completed">0</div>
+                </div>
+                <div class="stat-icon" style="background: #ecfdf5; color: #047857;">✅</div>
+            </div>
+        </div>
+
+        <!-- Card with Table & Controls -->
+        <div class="card" style="padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 260px;">
+                    <input type="text" id="admin-search-input" class="form-control" placeholder="Search by name or vehicle number..." oninput="filterBookings()" />
+                </div>
+                <div>
+                    <select id="admin-status-filter" class="form-control" style="width: auto; cursor: pointer;" onchange="filterBookings()">
+                        <option value="ALL">All Statuses</option>
+                        <option value="Booked">Booked</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="admin-loading" class="empty-state" style="display: none;">
+                <div class="empty-icon">⏳</div>
+                <p>Loading bookings from server...</p>
+            </div>
+
+            <div id="admin-empty" class="empty-state" style="display: none;">
+                <div class="empty-icon">📂</div>
+                <p>No bookings available.</p>
+            </div>
+
+            <div id="admin-table-wrapper" class="table-responsive">
+                <table class="custom-table" id="admin-bookings-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer Name</th>
+                            <th>Vehicle Number</th>
+                            <th>Booking Date</th>
+                            <th>Current Status</th>
+                            <th>Update Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-tbody">
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 AutoCare Vehicle Service Booking System. All rights reserved.</p>
+    </footer>
+
+    <script>
+        let allBookingsList = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAllBookings();
+        });
+
+        async function loadAllBookings() {
+            const loading = document.getElementById('admin-loading');
+            const empty = document.getElementById('admin-empty');
+            const wrapper = document.getElementById('admin-table-wrapper');
+
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            wrapper.style.display = 'none';
+
+            try {
+                const response = await fetch('/admin/all');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch bookings. Status: ' + response.status);
+                }
+
+                allBookingsList = await response.json();
+                updateStats(allBookingsList);
+                renderTable(allBookingsList);
+
+            } catch (err) {
+                console.error('Error fetching admin bookings:', err);
+                showToast('Unable to load bookings. Check server connection.', 'danger');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function updateStats(bookings) {
+            document.getElementById('stat-total').textContent = bookings.length;
+            let booked = 0, progress = 0, completed = 0;
+
+            bookings.forEach(b => {
+                const s = (b.status || '').toLowerCase();
+                if (s.includes('progress')) progress++;
+                else if (s.includes('complete') || s.includes('done')) completed++;
+                else if (s.includes('book')) booked++;
+            });
+
+            document.getElementById('stat-booked').textContent = booked;
+            document.getElementById('stat-progress').textContent = progress;
+            document.getElementById('stat-completed').textContent = completed;
+        }
+
+        function filterBookings() {
+            const query = document.getElementById('admin-search-input').value.trim().toLowerCase();
+            const statusFilter = document.getElementById('admin-status-filter').value;
+
+            const filtered = allBookingsList.filter(b => {
+                const matchesQuery = !query || 
+                    (b.customerName && b.customerName.toLowerCase().includes(query)) ||
+                    (b.vehicleNumber && b.vehicleNumber.toLowerCase().includes(query)) ||
+                    (String(b.id).includes(query));
+
+                const matchesStatus = statusFilter === 'ALL' || 
+                    (b.status && b.status.toLowerCase() === statusFilter.toLowerCase());
+
+                return matchesQuery && matchesStatus;
+            });
+
+            renderTable(filtered);
+        }
+
+        function renderTable(bookings) {
+            const tbody = document.getElementById('admin-tbody');
+            const empty = document.getElementById('admin-empty');
+            const wrapper = document.getElementById('admin-table-wrapper');
+
+            if (!bookings || bookings.length === 0) {
+                tbody.innerHTML = '';
+                wrapper.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            wrapper.style.display = 'block';
+            tbody.innerHTML = '';
+
+            bookings.forEach(b => {
+                const tr = document.createElement('tr');
+                tr.id = 'booking-row-' + b.id;
+
+                const statusOptions = ['Booked', 'In Progress', 'Completed', 'Cancelled'];
+                let optionsHtml = '';
+                statusOptions.forEach(opt => {
+                    const selected = (b.status || 'Booked').toLowerCase() === opt.toLowerCase() ? 'selected' : '';
+                    optionsHtml += `<option value="${opt}" ${selected}>${opt}</option>`;
+                });
+
+                tr.innerHTML = `
+                    <td><strong>#${b.id}</strong></td>
+                    <td><strong>${escapeHtml(b.customerName)}</strong></td>
+                    <td>${escapeHtml(b.vehicleNumber)}</td>
+                    <td>${escapeHtml(b.bookingDate || 'N/A')}</td>
+                    <td id="status-badge-${b.id}">${renderBadge(b.status)}</td>
+                    <td>
+                        <select class="select-status" onchange="changeStatus(${b.id}, this.value)">
+                            ${optionsHtml}
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="confirmDelete(${b.id})">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function changeStatus(id, newStatus) {
+            try {
+                const response = await fetch(`/admin/updateStatus/${id}?status=${encodeURIComponent(newStatus)}`, {
+                    method: 'PUT'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Update failed with status ' + response.status);
+                }
+
+                const updated = await response.json();
+                
+                // Update in local cache
+                const item = allBookingsList.find(b => b.id === id);
+                if (item) item.status = newStatus;
+
+                // Update badge and stats
+                const badgeCell = document.getElementById('status-badge-' + id);
+                if (badgeCell) badgeCell.innerHTML = renderBadge(newStatus);
+                updateStats(allBookingsList);
+
+                showToast(`Booking #${id} status updated to "${newStatus}"`, 'success');
+            } catch (err) {
+                console.error('Status update error:', err);
+                showToast('Failed to update status. Please try again.', 'danger');
+                loadAllBookings();
+            }
+        }
+
+        async function confirmDelete(id) {
+            if (!confirm(`Are you sure you want to permanently delete booking #${id}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/admin/delete/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Delete failed with status ' + response.status);
+                }
+
+                // Remove from local list
+                allBookingsList = allBookingsList.filter(b => b.id !== id);
+                updateStats(allBookingsList);
+                filterBookings();
+
+                showToast(`Booking #${id} deleted successfully.`, 'success');
+            } catch (err) {
+                console.error('Delete error:', err);
+                showToast('Failed to delete booking. Please try again.', 'danger');
+            }
+        }
+
+        function renderBadge(status) {
+            const s = (status || 'Booked').toLowerCase();
+            let badgeClass = 'badge-booked';
+
+            if (s.includes('progress')) badgeClass = 'badge-progress';
+            else if (s.includes('complete') || s.includes('done')) badgeClass = 'badge-completed';
+            else if (s.includes('cancel')) badgeClass = 'badge-cancelled';
+
+            return `<span class="badge ${badgeClass}"><span class="badge-dot"></span>${escapeHtml(status || 'Booked')}</span>`;
+        }
+
+        function showToast(message, type) {
+            const toast = document.getElementById('toast-alert');
+            toast.className = 'alert alert-' + type;
+            toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span> <div>${escapeHtml(message)}</div>`;
+            toast.style.display = 'flex';
+
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
