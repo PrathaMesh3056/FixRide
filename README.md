@@ -222,5 +222,5 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more details
 
 - **Author**: Prathamesh Patil
 - **GitHub**: [@PrathaMesh3056](https://github.com/PrathaMesh3056)
-- **Email**: [patil30pratham@gmail.com](mailto:patil30pratham@gmail.com)
+- **Email**: [prathameshpatil300804@gmail.com](mailto:prathameshpatil300804@gmail.com)
 - **Project Link**: [https://github.com/PrathaMesh3056/FixRide](https://github.com/PrathaMesh3056/FixRide)
